@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Todo List</title>
+	<link rel="stylesheet" href="css/stylesheet.css"> 
+
+	<script src="bower_components/handlebars/handlebars.js"></script>
+
+	<script src="javascript/framework.js"></script>
+	<script src="javascript/config.js"></script>
+	<script src="javascript/resources.js"></script>
+	<script src="javascript/controllers.js"></script>
+	<script src="javascript/views.js"></script>
+	<script src="javascript/main.js"></script>
+</head>
+<body>	
+	<template id="todo-view-template">
+  		<input type="text" id="add-item-input"> <button type="button" id="add-item-btn">Add</button>
+  		<ul id="todo-list">
+  			{{#each items}}
+  				<li><span>{{this}}</span> <button type="button" data-item="{{this}}">Delete</button></li>
+  			{{/each}}
+  		</ul>
+  		<p>{{items.length}} items in list</p>
+	</template>
+
+	<div id="todo-view">		
+	</div>
+</body>
+</html>

@@ -1,0 +1,20 @@
+
+#add-item-input {
+	width: 12em;
+}
+
+#todo-list {
+	list-style: none;
+	padding-left: 0;
+}
+#todo-list > li {
+	width: 12em;
+	margin: 0.5em 0;
+}
+#todo-list span {
+	display: inline-block;
+	width: 7em;
+}
+#todo-list button {
+	float: right;
+}
