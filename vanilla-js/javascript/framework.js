@@ -3,7 +3,9 @@ var Framework = function() {
 
 	var providers = {},
 		services = {},
-		views = {};
+		views = {},
+
+		functionParamsRegex = /^[^\(]+\(([^\)]*)\)\s+{/;
 
 	var resolveDependencies = function(serviceName, dependencies) {
 		return dependencies.map(function(dep) {
@@ -15,11 +17,30 @@ var Framework = function() {
 		});
 	};
 
+	var identifyDependencies = function(serviceName, provider, _dependencies) {
+		var dependencies = _dependencies ? _dependencies : provider.__inject__;
+
+		if (!dependencies) {
+			var paramsMatch = provider.toString().match(functionParamsRegex);
+
+			if (paramsMatch && paramsMatch.length === 2) {
+				dependencies = paramsMatch[1].split(',')
+					.map(function(p) { return p.trim(); })
+					.filter(function(p) { return p !== ""; });
+			} else {
+				throw new Error("Error when parsing provider function's parameters list, provider: " + serviceName);
+			}
+		}
+
+		return dependencies;
+	}
+
 	var registerServiceProvider = function(name, provider, _dependencies) {
-		var dependencies = _dependencies || [];
+		var dependencies = identifyDependencies(name, provider, _dependencies);
+
 		if (providers[name] === undefined) {
-			provider.$name = name;
-			provider.$inject = dependencies;
+			provider.__name__ = name;
+			provider.__inject__ = dependencies || [];
 
 			providers[name] = provider;
 		} else {
@@ -30,7 +51,7 @@ var Framework = function() {
 	var createServiceInstance = function(name) {
 		var provider = providers[name];
 		if (provider) {
-			var resolvedDependencies = resolveDependencies(name, provider.$inject);
+			var resolvedDependencies = resolveDependencies(name, provider.__inject__);
 			return provider.apply(this, resolvedDependencies);
 		} else {
 			throw new Error('Provider ' + name + ' not found');
@@ -82,7 +103,7 @@ var Framework = function() {
 					rootNode.innerHTML = template(scope);
 				};
 			} else {
-				throw new Error("Template not found. Id: " + templateId);
+				throw new Error("Template not found, id: " + templateId);
 			}
 		}
 	};
