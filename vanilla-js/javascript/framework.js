@@ -8,7 +8,7 @@ var Framework = function() {
 		functionParamsRegex = /^[^\(]+\(([^\)]*)\)\s+{/;
 
 	var resolveDependencies = function(dependencies, componentName) {
-		return dependencies.map(function(dep) {
+		return (dependencies || []).map(function(dep) {
 			var service = getServiceInstance(dep);
 			if (!service) {
 				throw new Error("Cannot resolve dependency: " + dep + 
@@ -21,7 +21,7 @@ var Framework = function() {
 	var identifyDependencies = function(component, _dependencies, componentName) {
 		var dependencies = _dependencies ? _dependencies : component.__inject__;
 
-		if (!dependencies) {
+		if (typeof component === 'function' && !dependencies) {
 			var paramsMatch = component.toString().match(functionParamsRegex);
 
 			if (paramsMatch && paramsMatch.length === 2) {
@@ -34,7 +34,7 @@ var Framework = function() {
 			}
 		}
 
-		return dependencies;
+		return dependencies || [];
 	}
 
 	var registerServiceProvider = function(name, provider, _dependencies) {
@@ -54,7 +54,7 @@ var Framework = function() {
 		var provider = providers[name];
 		if (provider) {
 			var resolvedDeps = resolveDependencies(provider.__inject__, name);
-			return provider.apply(this, resolvedDeps);
+			return provider.apply(undefined, resolvedDeps);
 		} else {
 			throw new Error('Provider ' + name + ' not found');
 		}
@@ -65,6 +65,17 @@ var Framework = function() {
 			services[name] = createServiceInstance(name);
 		}
 		return services[name];
+	};
+
+	var applyDependencies = function(component, dependencies, resolvedDeps) {
+		if (typeof component === 'function') {
+			return component.apply(undefined, resolvedDeps);
+		} else {
+			resolvedDeps.forEach(function(dep, i) {
+				component[dependencies[i]] = dep;
+			});
+			return component;
+		}
 	};
 
 	return {
@@ -84,7 +95,8 @@ var Framework = function() {
 			var dependencies = identifyDependencies(component, _dependencies),
 				resolvedDeps = resolveDependencies(dependencies);
 
-			return component.apply(undefined, resolvedDeps);
+			return applyDependencies(component, dependencies, resolvedDeps);
+			
 		},
 		controller: function() {
 			return this.service.apply(this, arguments);

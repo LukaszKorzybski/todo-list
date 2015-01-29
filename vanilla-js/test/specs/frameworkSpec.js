@@ -95,6 +95,10 @@ describe('framework', function() {
 			expect(sut.inject(func)).toBe(result);
 		});
 
+		it('should not fail if function does not have dependencies', function() {			
+			expect(sut.inject(function() {})).toBeUndefined();
+		});
+
 		it('should resolve and inject inline defined dependecies', function() {
 			var func = function(testService) {
 				return testService.msg;
@@ -122,6 +126,20 @@ describe('framework', function() {
 			
 			var result = sut.inject(func);
 			expect(result).toEqual('test service,test service 1');
+		});
+
+		it('should support injecting dependencies into objects', function() {
+			var obj = {};
+			sut.inject(obj, ['testService']);
+			expect(obj.testService).toBeDefined();
+			expect(obj.testService.msg).toEqual('test service');
+		});
+
+		it('should support injecting into objects dependencies defined with __inject__ property', function() {
+			var obj1 = { __inject__: ['testService'] };
+			sut.inject(obj1);
+			expect(obj1.testService).toBeDefined;
+			expect(obj1.testService.msg).toEqual('test service');
 		});
 	});
 
