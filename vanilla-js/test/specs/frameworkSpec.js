@@ -1,5 +1,5 @@
 describe('framework', function() {
-	"use strict";
+	'use strict';
 
 	var sut,
 		serviceProvider,

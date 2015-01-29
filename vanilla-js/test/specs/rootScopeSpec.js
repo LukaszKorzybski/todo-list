@@ -1,5 +1,6 @@
 describe('rootScope', function() {
-
+	'use strict';
+	
 	var rootScope;
 
 	beforeEach(function() {
@@ -13,7 +14,7 @@ describe('rootScope', function() {
 
 			expect(scope1.__proto__).toBe(scope2.__proto__);
 			expect(scope1).not.toBe(scope2);
-		});	
+		});
 	});
 
 	describe('Scope', function() {
