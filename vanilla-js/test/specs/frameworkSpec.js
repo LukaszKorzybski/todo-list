@@ -1,23 +1,19 @@
 describe('framework', function() {
 	"use strict";
 
-	var sut;
+	var sut,
+		serviceProvider,
+		service1Provider;
 
 	beforeEach(function() {
 		sut = Framework();
+		serviceProvider = function() { return { msg: 'test service' }; };
+		service1Provider = function(testService) { return { msg: testService.msg + ' 1' }; };
+
+		sut.service('testService', serviceProvider);
 	});
 
 	describe('service', function() {
-
-		var serviceProvider,
-			service1Provider;
-
-		beforeEach(function() {
-			serviceProvider = function() { return { msg: 'test service' }; };
-			service1Provider = function(testService) { return { msg: testService.msg + ' 1' }; };
-
-			sut.service('testService', serviceProvider);
-		});
 
 		it('should register given service provider under given name', function() {			
 			expect(sut.providers['testService']).toBe(serviceProvider);
@@ -88,6 +84,44 @@ describe('framework', function() {
 		it("should not fail if provider function doesn't have any parameters", function() {
 			var testService = sut.service('testService');
 			expect(testService.msg).toEqual('test service');
+		});
+	});
+	
+	describe('inject', function() {
+		it('should return result of the function passed', function() {
+			var result = {},
+				func = function() { return result; };
+
+			expect(sut.inject(func)).toBe(result);
+		});
+
+		it('should resolve and inject inline defined dependecies', function() {
+			var func = function(testService) {
+				return testService.msg;
+			};			
+
+			var result = sut.inject(func, ['testService']);
+			expect(result).toEqual('test service');
+		});
+
+		it("should use component's __inject__ property to identify dependencies when no inline dependencies were passed", function() {
+			var func = function(testService) { 
+				return testService.msg 
+			};
+			func.__inject__ = ['testService'];
+			
+			var result = sut.inject(func);
+			expect(result).toEqual('test service');
+		});
+
+		it("should use component parameters' names to identify dependencies when no explicit dependencies information is given", function() {
+			var func = function(  testService  ,testService1 ) { 
+				return testService.msg + ',' + testService1.msg; 
+			};
+			sut.service('testService1', service1Provider);
+			
+			var result = sut.inject(func);
+			expect(result).toEqual('test service,test service 1');
 		});
 	});
 
