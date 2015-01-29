@@ -1,4 +1,4 @@
-framework.service('todoResource', function(config) {
+framework.component('todoResource', function(config) {
 	'use strict';
 
 	var STORAGE_KEY = config.storageKey,
